@@ -5,8 +5,12 @@ const fs = require("fs");
 const http = require("http");
 const url = require("url");
 
+//3rd party libraries
+const slugify = require("slugify");
+
 //import our modules
 const replaceTemplate = require("./modules/replaceTemplate");
+
 ///////////////////////////////////////////////////////////////////////////////
 //FILES
 // ---------------- Synchronous and Asynchronous ways of doing operations for NODE.JS----------
@@ -64,21 +68,20 @@ const replaceTemplate = require("./modules/replaceTemplate");
 //   return output;
 // };
 
-const tempOverview = fs.readFileSync(
-  `${__dirname}/templates/template-overview.html`,
-  "utf-8"
-);
-const tempCard = fs.readFileSync(
-  `${__dirname}/templates/template-card.html`,
-  "utf-8"
-);
-const tempProduct = fs.readFileSync(
-  `${__dirname}/templates/template-product.html`,
-  "utf-8"
-);
+const tempOverview = fs.readFileSync(`${__dirname}/templates/template-overview.html`, "utf-8");
+
+const tempCard = fs.readFileSync(`${__dirname}/templates/template-card.html`, "utf-8");
+const tempProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`, "utf-8");
 
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
 const dataObject = JSON.parse(data);
+
+const slugs = dataObject.map((el) => {
+  return slugify(el.productName, { lower: true });
+});
+console.log(slugs);
+console.log(slugify("Fresh Avocados", { lower: true }));
+
 const server = http.createServer((req, res) => {
   // console.log(req.url);
   //url.parse gives us an object with the query and the pathname
