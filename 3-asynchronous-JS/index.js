@@ -22,33 +22,92 @@ const writeFilePro = (file, data) => {
   });
 };
 
-//Chaining the promises
-//this returns a promise and we can use then on it
-readFilePro(`${__dirname}/dog.txt`)
-  .then((data) => {
+/////////////-------------ASYNC -AWAIT
+//Syntax sugar for Promises
+const getDogPic = async () => {
+  try {
+    const data = await readFilePro(`${__dirname}/dog.txt`);
     console.log(`Breed: ${data}`);
 
-    //this returns a promise and we can use then on it
-    return superagent.get(`https://dog.ceo/api/breed/${data}/images`);
-  })
-  .then((res) => {
-    console.log(res.body.message[0]);
+    //Multiple promises
+    const res1Pro = superagent.get(`https://dog.ceo/api/breed/${data}/images`);
 
-    //this returns a promise and we can use then on it
-    return writeFilePro("dog-img.txt", res.body.message);
+    const res2Pro = superagent.get(`https://dog.ceo/api/breed/${data}/images`);
 
-    // fs.writeFile("dog-img.txt", res.body.message[0], (err) => {
-    //   if (err) return console.log(err.message);
-    //   console.log("Random dog image saved to file!");
-    // });
-  })
-  .then(() => {
+    const res3Pro = superagent.get(`https://dog.ceo/api/breed/${data}/images`);
+
+    const all = await Promise.all([res1Pro, res2Pro, res3Pro]);
+    const imgs = all.map((el) => el.body.message[0]);
+    console.log(imgs);
+
+    // const res = await superagent.get(`https://dog.ceo/api/breed/${data}/images`);
+    // console.log(res.body.message[0]);
+
+    await writeFilePro("dog-img.txt", imgs.join("\n"));
+    // await writeFilePro("dog-img.txt", res.body.message[0]);
     console.log("RAndom dog image saved to file");
-  })
-  //the promise have the error to catch
-  .catch((err) => {
-    console.log(err.message);
-  });
+  } catch (err) {
+    console.log(err);
+    //if we don't use throw then the next steps are executed
+    //to mark all the function as rejected.
+    throw err;
+  }
+  return "2: Ready";
+};
+
+//declaring an IFFY for handling the error
+(async () => {
+  try {
+    console.log("1: Will get dog pics");
+    const x = await getDogPic();
+    console.log(x);
+    console.log("3: Done get dog pics");
+  } catch (err) {
+    console.log(`ERROR  +${err}`);
+  }
+})();
+
+// console.log("1: Will get dog pics");
+// const x = getDogPic();
+// getDogPic()
+//   .then((x) => {
+//     console.log(x);
+
+//     console.log("3: Done get dog pics");
+//   })
+//   .catch((err) => {
+//     console.log(`ERROR  +${err}`);
+//   });
+// console.log(x);
+// console.log("3: Done get dog pics");
+
+//Chaining the promises
+//this returns a promise and we can use then on it
+// readFilePro(`${__dirname}/dog.txt`)
+//   .then((data) => {
+//     console.log(`Breed: ${data}`);
+
+//     //this returns a promise and we can use then on it
+//     return superagent.get(`https://dog.ceo/api/breed/${data}/images`);
+//   })
+//   .then((res) => {
+//     console.log(res.body.message[0]);
+
+//     //this returns a promise and we can use then on it
+//     return writeFilePro("dog-img.txt", res.body.message);
+
+//     // fs.writeFile("dog-img.txt", res.body.message[0], (err) => {
+//     //   if (err) return console.log(err.message);
+//     //   console.log("Random dog image saved to file!");
+//     // });
+//   })
+//   .then(() => {
+//     console.log("RAndom dog image saved to file");
+//   })
+//   //the promise have the error to catch
+//   .catch((err) => {
+//     console.log(err.message);
+//   });
 
 // readFilePro(`${__dirname}/dog.txt`).then((data) => {
 //   console.log(`Breed: ${data}`);
