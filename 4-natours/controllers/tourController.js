@@ -4,6 +4,30 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
+//verify if the id is correct  or if not, to exit before the rest of the handlers are run
+exports.checkID = (req, res, next, val) => {
+  console.log(`Tour id is ${val}`);
+  if (val * 1 > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+  next();
+};
+
+exports.checkBody = (req, res, next) => {
+  //   console.log(req);
+  console.log(req.body);
+  if (!req.body.name || !req.body.price) {
+    return res.status(400).json({
+      status: 'Fail',
+      message: 'Bad request, missing name or prices',
+    });
+  }
+  next();
+};
+
 exports.getAllTours = (req, res) => {
   console.log(req.requestTime);
   //creating a JSend
@@ -25,7 +49,6 @@ exports.getTour = (req, res) => {
 
   //convert a string to a number trick
   const id = req.params.id * 1;
-
   // const tour = tours.find((el) => el.id === id);
   const tour = tours.find((el) => {
     return el.id === id;
@@ -33,12 +56,12 @@ exports.getTour = (req, res) => {
 
   // if (id > tours.length) {
   //sol 2
-  if (!tour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
+  //   if (!tour) {
+  //     return res.status(404).json({
+  //       status: 'fail',
+  //       message: 'Invalid ID',
+  //     });
+  //   }
 
   res.status(200).json({
     status: 'success',
@@ -69,13 +92,6 @@ exports.createTour = (req, res) => {
 };
 
 exports.updateTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
   res.status(200).json({
     status: 'success',
     data: {
@@ -85,13 +101,6 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
   //204 no content
   res.status(204).json({
     status: 'success',

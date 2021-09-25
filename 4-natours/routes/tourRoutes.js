@@ -5,12 +5,27 @@ const tourController = require('./../controllers/tourController');
 const router = express.Router();
 const userRouter = express.Router();
 
+//Param middleware
+// router.param('id', (req, res, next, val) => {
+//   console.log(`Tour id is ${val}`);
+//   next();
+// });
+
+router.param('id', tourController.checkID);
+// router.use("/tours", tourController.checkBody);
+//our middleware
+
+// router.use((req, res, next) => {
+//     console.log('Hello from the middleware ⭐');
+//     next();
+//   });
+
 // ---------------- Router
 
 router
   .route(`/`)
   .get(tourController.getAllTours)
-  .post(tourController.createTour);
+  .post(tourController.checkBody, tourController.createTour);
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
 
 router
