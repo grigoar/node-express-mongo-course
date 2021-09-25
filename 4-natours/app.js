@@ -8,10 +8,17 @@ const tourRouter = require('./routes/tourRoutes');
 const app = express();
 
 // 1) MIDDLEWARES
-app.use(morgan('dev'));
+console.log('--------------');
+console.log(process.env.NODE_ENV);
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 //middleware so we can add some data between the request and the response
 app.use(express.json());
+
+//build in middleware for static file we want to be accessed
+app.use(express.static(`${__dirname}/public`));
 
 //our middleware
 app.use((req, res, next) => {

@@ -50,9 +50,7 @@ exports.getTour = (req, res) => {
   //convert a string to a number trick
   const id = req.params.id * 1;
   // const tour = tours.find((el) => el.id === id);
-  const tour = tours.find((el) => {
-    return el.id === id;
-  });
+  const tour = tours.find((el) => el.id === id);
 
   // if (id > tours.length) {
   //sol 2
@@ -74,7 +72,7 @@ exports.createTour = (req, res) => {
   // console.log(req.body);
   //creating a new object with a new id
   const newId = tours[tours.length - 1].id + 1;
-  const newTour = Object.assign({ id: newId }, req.body);
+  const newTour = Object.assign({ id: newId }, ...req.body);
 
   tours.push(newTour);
   fs.writeFile(
