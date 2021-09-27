@@ -25,7 +25,8 @@ const userRouter = express.Router();
 router
   .route(`/`)
   .get(tourController.getAllTours)
-  .post(tourController.checkBody, tourController.createTour);
+  .post(tourController.createTour);
+// .post(tourController.checkBody, tourController.createTour);
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
 
 router
