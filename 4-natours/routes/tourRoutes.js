@@ -11,7 +11,7 @@ const userRouter = express.Router();
 //   next();
 // });
 
-router.param('id', tourController.checkID);
+// router.param('id', tourController.checkID);
 // router.use("/tours", tourController.checkBody);
 //our middleware
 

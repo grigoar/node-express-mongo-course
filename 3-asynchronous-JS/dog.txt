@@ -1,1 +1,4 @@
 labrador
+
+
+DATABASE_PASSWORD = U5h6RzRLZecu8IsV
