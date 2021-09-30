@@ -203,10 +203,9 @@ exports.createTour = catchAsync(async (req, res, next) => {
   //   });
   //   //in the async functions we need to use try catch, and if some error is throw by the await function it will enter the catch
   // } catch (err) {
-  //   res.status(400).json({
-  //     status: 'fail',
-  //     message: err,
-  //   });
+  //   const error = {...err};
+
+  //   res.status(500).json({error});
   // }
 });
 
