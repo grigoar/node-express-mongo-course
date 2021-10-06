@@ -5,6 +5,7 @@ const authController = require('../controllers/authController');
 const router = express.Router();
 
 router.post('/signup', authController.signup);
+router.post('/login', authController.login);
 
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
 
