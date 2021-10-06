@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
       message: "Passwords don't match",
     },
   },
+  passwordChangedAt: {
+    type: Date,
+    required: true,
+  },
 });
 
 //Encryption using mongoose midleware
@@ -60,6 +64,22 @@ userSchema.methods.correctPassword = async function (
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  console.log('heelo');
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    // console.log(this.passwordChangedAt, JWTTimestamp);
+    // if the password was changed after the token was generated then it will be ask again
+    // console.log(changedTimestamp, JWTTimestamp);
+    return JWTTimestamp < changedTimestamp; // 100 < 200
+  }
+  //if the user didn't changed the password
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

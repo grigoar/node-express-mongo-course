@@ -1,6 +1,7 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
 // const {getAllTours ..} = require('./../controllers/tourController');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 const userRouter = express.Router();
@@ -31,7 +32,7 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 router
   .route(`/`)
-  .get(tourController.getAllTours)
+  .get(authController.protect, tourController.getAllTours)
   .post(tourController.createTour);
 // .post(tourController.checkBody, tourController.createTour);
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
