@@ -15,12 +15,15 @@ const signToken = (id) => {
 //importing catchAsync so we don't use the try-catch all the time
 exports.signup = catchAsync(async (req, res, next) => {
   //   const newUser = await User.create(req.body);//not secure because the role can be directly injected
+  //Here need to be very carefull to specify the fields that we want to save in the database and to be shown in the output of the response
+  //if we don't specify the role, we can just set it by using the default, if we are trying to inject the role manually it will not work
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt,
+    // passwordChangedAt: req.body.passwordChangedAt,//not really needed for now
+    // role: req.body.role//This is not safe to use like this, better change it directly in the database, or set a different route to change the roles of the users
   });
 
   const token = signToken(newUser._id);
@@ -104,3 +107,40 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+//restricting routes based on the specified roles of the user
+//this runs after the protect middleware and it has access to the "req.user" so we can verify what role the user have
+//because we can't pass arguments to a middleware function we need to use closures to pass them=>and then using closures
+//this is like a wrapper function
+exports.restrictTo = (...roles) => {
+  //this is a closure
+  return (req, res, next) => {
+    //roles is an array => roles[ "admin", "lead-guide"]. role="user" will not have access
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };
+};
+
+//the user will send an email in order to receive a token for resetting the password
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  //1)Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with email address', 404));
+  }
+
+  //2)Generate the random token
+  const resetToken = user.createPasswordResetToken();
+  //we need to use this in order to not have the required body in this case
+  //this is also used when the user is registered
+  // await user.save({ validateBeforeSave: false });
+  await user.save();
+
+  //3)Send it to user's email
+});
+//the user will send the token with the new password in order to reset the password
+exports.resetPassword = (req, res, next) => {};

@@ -1,3 +1,5 @@
+//this is a node.js module
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
@@ -21,6 +23,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  passwordChangedAt: {
+    type: Date,
+    // required: true,
+    // default: new Date(),
+  },
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user',
+  },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
@@ -38,10 +50,8 @@ const userSchema = new mongoose.Schema({
       message: "Passwords don't match",
     },
   },
-  passwordChangedAt: {
-    type: Date,
-    required: true,
-  },
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 //Encryption using mongoose midleware
@@ -67,7 +77,7 @@ userSchema.methods.correctPassword = async function (
 };
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
-  console.log('heelo');
+  // console.log('heelo');
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
@@ -80,6 +90,23 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   }
   //if the user didn't changed the password
   return false;
+};
+
+//need to create a reset token and save it in the database
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  //don't save data without encryption in the DB
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  console.log({ resetToken }, this.passwordResetToken);
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  //this will be used to send the token but not encripted, encrypted is only in the DB
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
