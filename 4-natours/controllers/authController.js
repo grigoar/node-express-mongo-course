@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 //node module to use the promisify for verify the token
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
@@ -10,6 +11,18 @@ const sendEmail = require('../utils/email');
 const signToken = (id) => {
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+  // console.log(process.env);
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
   });
 };
 
@@ -26,16 +39,17 @@ exports.signup = catchAsync(async (req, res, next) => {
     // passwordChangedAt: req.body.passwordChangedAt,//not really needed for now
     // role: req.body.role//This is not safe to use like this, better change it directly in the database, or set a different route to change the roles of the users
   });
+  createSendToken(newUser, 201, res);
 
-  const token = signToken(newUser._id);
-  // console.log(process.env);
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  // const token = signToken(newUser._id);
+  // // console.log(process.env);
+  // res.status(201).json({
+  //   status: 'success',
+  //   token,
+  //   data: {
+  //     user: newUser,
+  //   },
+  // });
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -59,11 +73,12 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // console.log(user);
   //3)If everything ok, send token to client
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
+  // const token = signToken(user._id);
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -166,11 +181,68 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       500
     );
   }
-
   res.status(200).json({
     status: 'success',
     message: 'Token sent to email!',
   });
 });
 //the user will send the token with the new password in order to reset the password
-exports.resetPassword = (req, res, next) => {};
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  //1) Get user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  //if there is a user with the token and if the token has not expired
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  //2) If token has not expired, and there is user, set the new password
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  //3) Update changePasswordAt property for the user
+  //done in the user model
+  //4) Log the user in, send JWT
+  createSendToken(user, 200, res);
+  // const token = signToken(user._id);
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { passwordCurrent, email, password, passwordConfirm } = req.body;
+  //1)Get user from collection
+  //we have the id of the user
+  const user = await User.findById(req.user.id).select('password');
+  //2) Check if POSTed current password is correct
+  if (!user || !(await user.correctPassword(passwordCurrent, user.password))) {
+    return next(
+      new AppError(
+        'The provided password does not match with the old password!'
+      ),
+      401
+    );
+  }
+  //3) If so, update password
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+
+  const newUser = await user.save();
+  //this not work because the pass can be updated only by using the save
+  // User.findByIdAndUpdate
+
+  //4) Log user in, send JWT
+  createSendToken(newUser, 200, res);
+});

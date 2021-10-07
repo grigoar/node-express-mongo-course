@@ -52,6 +52,11 @@ const userSchema = new mongoose.Schema({
   },
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 //Encryption using mongoose midleware
@@ -64,6 +69,22 @@ userSchema.pre('save', async function (next) {
 
   //Delete password confirm field
   this.passwordConfirm = undefined;
+  next();
+});
+
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+//----------------query middleware
+// userSchema.pre("find", function(next)=>{
+userSchema.pre(/^find/, function (next) {
+  //this points to the current query
+  // this.find({ active: true });
+  this.find({ active: { $ne: false } });
   next();
 });
 
