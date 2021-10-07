@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
+// const User = require('./userModel');
 
 //specify the default Schema and doing some validation and options
 //schema options are different
@@ -86,6 +87,34 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    //this is embeded field
+    startLocation: {
+      // GeoJSON to specify the location geolocation data
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number], //lat - long
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    // guides: Array,
+    //referencing
+    guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
   {
     //options
@@ -110,6 +139,19 @@ tourSchema.pre('save', function (next) {
   next();
 });
 
+//this is embedding the data-> but we will use the referencing because it only works when creating and if any updates are made we need to update the embedded data also
+// tourSchema.pre('save', async function (next) {
+//   //the result is an array of promises
+//   const guidesPromises = this.guides.map(async (id) => {
+//     return await User.findById(id);
+//   });
+//   console.log('hello when creating new tour');
+//   //need to resolve the promises
+//   this.guides = await Promise.all(guidesPromises);
+
+//   next();
+// });
+
 // //the save is called hook. So we have a pre save hook
 // tourSchema.pre('save', function (next) {
 //   console.log('Will save document...');
@@ -130,6 +172,14 @@ tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
 
   this.start = Date.now();
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
   next();
 });
 
