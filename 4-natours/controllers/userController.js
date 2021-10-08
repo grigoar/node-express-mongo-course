@@ -3,6 +3,8 @@ const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
+const factory = require('./handlerFactory');
+
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -12,27 +14,28 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 // ---- For Users -------
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
+exports.getAllUsers = factory.getAll(User);
+// exports.getAllUsers = catchAsync(async (req, res, next) => {
+//   const users = await User.find();
 
-  //instead of chaining all here, we can construct the query one operation after another
-  //query.sort().select().skip().limit();
+//   //instead of chaining all here, we can construct the query one operation after another
+//   //query.sort().select().skip().limit();
 
-  //SEND RESPONSE
-  //creating a JSend
-  res.status(200).json({
-    status: 'success',
-    // requestedAt: req.requestTime,
-    results: users.length,
-    data: {
-      users: users,
-    },
-  });
-  // res.status(500).json({
-  //   status: 'error',
-  //   message: 'This route is not yet defined',
-  // });
-});
+//   //SEND RESPONSE
+//   //creating a JSend
+//   res.status(200).json({
+//     status: 'success',
+//     // requestedAt: req.requestTime,
+//     results: users.length,
+//     data: {
+//       users: users,
+//     },
+//   });
+//   // res.status(500).json({
+//   //   status: 'error',
+//   //   message: 'This route is not yet defined',
+//   // });
+// });
 
 //update the user data, except the password-that is done elsewhere
 //this is not updateUser, that will be use by an admin
@@ -76,27 +79,14 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined',
-  });
-};
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'This route is not yet defined',
+    message: 'This route is not yet defined! Please use sign up instead',
   });
 };
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined',
-  });
-};
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined',
-  });
-};
+
+exports.getUser = factory.getOne(User);
+//this is only for administrators and do not update passwords with this-it will not work
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);

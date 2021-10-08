@@ -1,6 +1,6 @@
 const express = require('express');
 
-const routerController = require('../controllers/reviewController');
+const reviewController = require('../controllers/reviewController');
 const authController = require('../controllers/authController');
 
 //merge Params allow us to use the params from other routes also
@@ -12,14 +12,21 @@ const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(routerController.getAllReviews)
+  .get(reviewController.getAllReviews)
   .post(
     authController.protect,
     authController.restrictTo('user'),
-    routerController.createReview
+    reviewController.setTourUserIds,
+    reviewController.createReview
   );
 
 //My implementation
 // router.route('/tour/:tourId').get(routerController.getTourReviews);
+
+router
+  .route('/:id')
+  .get(reviewController.getReview)
+  .delete(reviewController.deleteReview)
+  .patch(reviewController.updateReview);
 
 module.exports = router;

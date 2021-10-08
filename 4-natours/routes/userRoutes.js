@@ -24,6 +24,10 @@ router.delete('/deleteMe', authController.protect, userController.deleteMe);
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
 
 router.route('/').get(userRouter.getAllUsers).put(userRouter.createUser);
-router.route('/:id').get(userRouter.updateUser).delete(userRouter.deleteUser);
+router
+  .route('/:id')
+  .get(userRouter.getUser)
+  .delete(userRouter.deleteUser)
+  .patch(userRouter.updateUser);
 
 module.exports = router;
