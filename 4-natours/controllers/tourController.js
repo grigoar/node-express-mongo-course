@@ -139,7 +139,7 @@ exports.getTour = catchAsync(async (req, res, next) => {
   //   select: '-__v -passwordChangedAt',
   // });
   //we used middleware for the populate
-  const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate('reviews');
   // Tour.findOne({ _id: req.params.id })
 
   if (!tour) {

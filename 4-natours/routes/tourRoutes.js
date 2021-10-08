@@ -2,6 +2,8 @@ const express = require('express');
 const tourController = require('../controllers/tourController');
 // const {getAllTours ..} = require('./../controllers/tourController');
 const authController = require('../controllers/authController');
+// const reviewController = require('../controllers/reviewController');
+const reviewRouter = require('../routes/reviewRoutes');
 
 const router = express.Router();
 const userRouter = express.Router();
@@ -22,6 +24,23 @@ const userRouter = express.Router();
 //   });
 
 // ---------------- Router
+//--------------NESTED Routes
+//child resource to parent resources
+//POST /tour/3434543/reviews
+//GET /tour/3434543/reviews
+//GET /tour/3434543/reviews/3434223
+
+// router
+//   .route('/:tourId/reviews')
+//   .post(
+//     authController.protect,
+//     authController.restrictTo('user'),
+//     reviewController.createReview
+//   );
+
+//this is the same as the app.use, so when the request hit this then it will be decoupled and it will use the reviewRouter
+//merge params for express to pass the tourId to reviewRouter
+router.use('/:tourId/reviews', reviewRouter);
 
 router
   .route('/top-5-cheap')

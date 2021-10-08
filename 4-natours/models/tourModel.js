@@ -115,6 +115,7 @@ const tourSchema = new mongoose.Schema(
     // guides: Array,
     //referencing
     guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    // reviews: [{ type: mongoose.Schema.ObjectId, ref: 'Review' }],
   },
   {
     //options
@@ -122,6 +123,14 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+//Virtual populate
+//We do this in order to link the reviews to the tour when we call for one. We don't use a lot of api calls
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
 
 //------------------virtual properties
 //when we need to access this for the current document we need normal function
