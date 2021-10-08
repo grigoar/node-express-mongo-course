@@ -39,6 +39,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, 'Rating must have be above 1.0'],
       max: [5, 'Rating must have be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10,
     },
     ratingsQuantity: {
       type: Number,
@@ -123,6 +124,11 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+//ordering : 1 asc, -1 desc
+// tourSchema.index({ price: 1 });
+//compound index
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
 
 //Virtual populate
 //We do this in order to link the reviews to the tour when we call for one. We don't use a lot of api calls

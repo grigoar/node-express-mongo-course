@@ -80,6 +80,8 @@ exports.getAll = (Model) =>
       .limitFields()
       .paginate();
     const docs = await features.query;
+    //if we want to see statistics from MongoDB
+    // const docs = await features.query.explain();
 
     //SEND RESPONSE
     res.status(200).json({
