@@ -14,6 +14,12 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 // ---- For Users -------
+//we are implementing an middleware so we can get the current user id and pass it to the factory get one
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.getAllUsers = factory.getAll(User);
 // exports.getAllUsers = catchAsync(async (req, res, next) => {
 //   const users = await User.find();

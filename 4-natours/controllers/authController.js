@@ -54,6 +54,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    // role: req.body.role,
     // passwordChangedAt: req.body.passwordChangedAt,//not really needed for now
     // role: req.body.role//This is not safe to use like this, better change it directly in the database, or set a different route to change the roles of the users
   });

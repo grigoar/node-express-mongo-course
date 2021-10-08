@@ -11,17 +11,25 @@ router.post('/login', authController.login);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
+//it runs in order so we can add a middleware
+//Protects all routes after this middleware
+router.use(authController.protect);
+
 router.patch(
   '/updateMyPassword',
-  authController.protect,
+
   authController.updatePassword
 );
 
-router.patch('/updateMe', authController.protect, userController.updateMe);
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
 //even if we don't actually delete the user use can fake it to look like it
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
+router.delete('/deleteMe', userController.deleteMe);
 
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
+
+//from here the routes are also restricted to the admin
+router.use(authController.restrictTo('admin'));
 
 router.route('/').get(userRouter.getAllUsers).put(userRouter.createUser);
 router
