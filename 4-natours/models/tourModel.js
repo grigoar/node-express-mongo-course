@@ -129,6 +129,8 @@ const tourSchema = new mongoose.Schema(
 //compound index
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+//for geospatial
+tourSchema.index({ startLocation: '2dsphere' });
 
 //Virtual populate
 //We do this in order to link the reviews to the tour when we call for one. We don't use a lot of api calls
@@ -205,14 +207,15 @@ tourSchema.post(/^find/, function (docs, next) {
 });
 
 // -----------AGGREGATION MIDDLEWARE
-tourSchema.pre('aggregate', function (next) {
-  //adding at the beginning for the array a new match stage
-  this.pipeline().unshift({
-    $match: { secretTour: { $ne: true } },
-  });
-  console.log(this.pipeline());
-  next();
-});
+//if $geoNear is the first operator in the pipeline then change the code
+// tourSchema.pre('aggregate', function (next) {
+//   //adding at the beginning for the array a new match stage
+//   this.pipeline().unshift({
+//     $match: { secretTour: { $ne: true } },
+//   });
+//   console.log(this.pipeline());
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 module.exports = Tour;
