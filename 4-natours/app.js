@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 
 const morgan = require('morgan');
@@ -19,7 +20,17 @@ const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express();
 
+//telling express what template engine we will use
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+// app.set('views', "./views"));//it works locally, the path might not work on the server
+
 // 1) GLOBAL MIDDLEWARES
+//Server static files
+//build in middleware for static file we want to be accessed
+app.use(express.static(path.join(__dirname, `public`)));
+// app.use(express.static(`${__dirname}/public`));
+
 //Set security HTTP headers
 app.use(helmet());
 
@@ -67,10 +78,6 @@ app.use(
   })
 );
 
-//Server static files
-//build in middleware for static file we want to be accessed
-app.use(express.static(`${__dirname}/public`));
-
 //our middleware
 // app.use((req, res, next) => {
 //   console.log('Hello from the middleware ⭐');
@@ -86,6 +93,14 @@ app.use((req, res, next) => {
 });
 
 // 2) ROUTE HANDLERS
+
+app.get('/', (req, res) => {
+  //it will now the path and it will search for the view file because we specified to render
+  res.status(200).render('base', {
+    tour: 'The Forest Hiker',
+    user: 'Grigoar',
+  });
+});
 
 //middleware
 app.use('/api/v1/tours', tourRouter);
