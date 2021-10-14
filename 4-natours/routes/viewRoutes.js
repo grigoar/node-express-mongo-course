@@ -14,6 +14,7 @@ const router = express.Router();
 //we can use this with extend base to change the content of the block we want when the route is changing
 //we set overview as default
 router.get('/', viewController.getOverview);
-router.get('/tour', viewController.getTour);
+router.get('/tour/:tourSlug', viewController.getTour);
+// router.get('/tour', viewController.getTour);
 
 module.exports = router;
