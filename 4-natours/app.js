@@ -8,6 +8,8 @@ const rateLimit = require('express-rate-limit');
 
 const helmet = require('helmet');
 
+const cors = require('cors');
+
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 
@@ -64,7 +66,13 @@ app.use(express.static(path.join(__dirname, `public`)));
 // app.use(express.static(`${__dirname}/public`));
 
 //Set security HTTP headers
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
+
+app.use(cors());
 
 console.log('--------------');
 console.log(process.env.NODE_ENV);
