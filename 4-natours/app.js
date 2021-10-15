@@ -1,3 +1,4 @@
+const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
 const path = require('path');
 const express = require('express');
 
@@ -20,6 +21,36 @@ const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
+// app.use((req, res, next) => {
+//   res.setHeader(
+//     'Content-Security-Policy',
+//     "script-src  'self' api.mapbox.com",
+//     "script-src-elem 'self' api.mapbox.com"
+//   );
+//   next();
+// });
+
+// app.use(
+//   csp({
+//     policies: {
+//       'default-src': [csp.NONE],
+//       'img-src': [csp.SELF],
+//     },
+//   })
+// );
+
+// app.use(
+//   expressCspHeader({
+//     directives: {
+//       'default-src': [SELF],
+//       'script-src': [SELF, INLINE, 'api.mapbox.com'],
+//       'style-src': [SELF, 'api.mapbox.com'],
+//       'img-src': ['data:', 'images.com'],
+//       'worker-src': [NONE],
+//       'block-all-mixed-content': true,
+//     },
+//   })
+// );
 
 //telling express what template engine we will use
 app.set('view engine', 'pug');
@@ -114,6 +145,7 @@ app.use((req, res, next) => {
 //     title: 'The Forest Hiker',
 //   });
 // });
+//for the mapbox
 
 //middleware
 app.use('/', viewRouter);
