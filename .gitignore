@@ -57,7 +57,7 @@ typings/
 
 # gatsby files
 .cache/
-public
+#public
 
 # Mac files
 .DS_Store
@@ -71,3 +71,5 @@ yarn-error.log
 
 # My files to ignore
 resources
+public/js/bundle.js
+public/js/bundle.js.map

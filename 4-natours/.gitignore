@@ -57,7 +57,6 @@ typings/
 
 # gatsby files
 .cache/
-public
 
 # Mac files
 .DS_Store
@@ -71,6 +70,7 @@ yarn-error.log
 
 # My files to ignore
 resources
+public/js/bundle.js
+public/js/bundle.js.map
 # Ignore the bundle build by the parcel + babel - this should be run by npm run watch:js
-bundle.js
-bundle.js.map
+
