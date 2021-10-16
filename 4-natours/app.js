@@ -99,6 +99,14 @@ app.use('/api', limiter);
 //accepts only a file of maximum size of 10kb
 app.use(express.json({ limit: '10kb' }));
 
+//middleware for sending a form with an action directly from the form
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10kb',
+  })
+);
+
 //to see the cookie we received
 app.use(cookieParser());
 
