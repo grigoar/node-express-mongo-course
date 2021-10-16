@@ -15,6 +15,8 @@ const xss = require('xss-clean');
 
 const hpp = require('hpp');
 
+const cookieParser = require('cookie-parser');
+
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
@@ -97,6 +99,9 @@ app.use('/api', limiter);
 //accepts only a file of maximum size of 10kb
 app.use(express.json({ limit: '10kb' }));
 
+//to see the cookie we received
+app.use(cookieParser());
+
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
@@ -127,6 +132,7 @@ app.use(
 //Testing middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  // console.log(req.cookies);
   // console.log(x);
   // console.log(req.headers);
   next();
