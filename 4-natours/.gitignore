@@ -71,3 +71,6 @@ yarn-error.log
 
 # My files to ignore
 resources
+# Ignore the bundle build by the parcel + babel - this should be run by npm run watch:js
+bundle.js
+bundle.js.map
