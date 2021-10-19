@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const userRouter = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const userController = require('../controllers/userController');
@@ -23,7 +24,14 @@ router.patch(
 );
 
 router.get('/me', userController.getMe, userController.getUser);
-router.patch('/updateMe', userController.updateMe);
+//the photo is the field from the form witch hold  the image
+router.patch(
+  '/updateMe',
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
+  userController.updateMe
+);
+// router.patch('/updateMe', upload.single('photo'), userController.updateMe);
 //even if we don't actually delete the user use can fake it to look like it
 router.delete('/deleteMe', userController.deleteMe);
 

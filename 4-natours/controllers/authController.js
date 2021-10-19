@@ -111,6 +111,7 @@ exports.logout = (req, res) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   //1)Getting token and check if it's there
+  // console.log(req);
   let token;
   if (
     req.headers.authorization &&
@@ -224,6 +225,7 @@ exports.isLoggedIn = async (req, res, next) => {
 //this is like a wrapper function
 exports.restrictTo = (...roles) => {
   //this is a closure
+  // console.log(roles);
   return (req, res, next) => {
     //roles is an array => roles[ "admin", "lead-guide"]. role="user" will not have access
     if (!roles.includes(req.user.role)) {

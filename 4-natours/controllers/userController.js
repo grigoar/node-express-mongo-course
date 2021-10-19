@@ -1,9 +1,58 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const User = require('../models/userModel');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 const factory = require('./handlerFactory');
+
+// multer documentation
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     //callback
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     //user-34543dfjghsdkfg42344(ID)-23432432423(timestamp).jpeg
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   },
+// });
+//so the images will be stored in the memory instead of in the file
+// this way we can process them with sharp library
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+// const upload = multer({ dest: 'public/img/users' });
+
+exports.uploadUserPhoto = upload.single('photo');
+
+exports.resizeUserPhoto = (req, res, next) => {
+  if (!req.file) return next();
+  //we need to use this because we have the image in the memory now
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  //image processor
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+};
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -46,6 +95,9 @@ exports.getAllUsers = factory.getAll(User);
 //update the user data, except the password-that is done elsewhere
 //this is not updateUser, that will be use by an admin
 exports.updateMe = catchAsync(async (req, res, next) => {
+  // console.log(req.file);
+  // console.log(req.body);
+
   //1) Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(
@@ -58,6 +110,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   //2)Filtered out unwanted fields names that are not allowed to be updated
   //we need to filter the body we put
   const filteredBody = filterObj(req.body, 'name', 'email');
+  if (req.file) filteredBody.photo = req.file.filename;
   //3) Update user document
   //now we can do the findByIdAndUpdate because we don't need to run the validators for the passwords
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
