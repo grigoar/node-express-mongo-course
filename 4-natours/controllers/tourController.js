@@ -1,3 +1,5 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 
@@ -5,6 +7,69 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 const factory = require('./handlerFactory');
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+//when there is a mix of upload with different model properties use this
+exports.uploadTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  console.log(req.files);
+
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  // 1) Cover image
+  // const imageCoverFilename = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+  req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/tours/${req.body.imageCover}`);
+  // .toFile(`public/img/tours/${imageCoverFilename}`);
+  //we need to put the images on the req.body so the update tour gets all the body
+  // req.body.imageCover = imageCoverFilename;
+  //2) Images
+  req.body.images = [];
+  // req.files.images.forEach(async (file, i) => {
+  //we need to use this so we wait until all the promises are returned and settled because if not the next() will call before the promises are resolved
+  await Promise.all(
+    req.files.images.map(async (file, i) => {
+      const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${filename}`);
+
+      req.body.images.push(filename);
+    })
+  );
+  console.log(req.body);
+  next();
+});
+
+//when it is a single image to upload
+// upload.singe('image');//req.file
+//when there are multiple images to upload
+// upload.array('images');req.files
 
 //to not have blocking code in the event loop we don't call the reading in the app.get callback function
 // const tours = JSON.parse(
@@ -403,7 +468,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
           type: 'Point',
           coordinates: [lng * 1, lat * 1],
         },
-        distanceField: "distance",
+        distanceField: 'distance',
         distanceMultiplier: multiplier,
       },
     },
