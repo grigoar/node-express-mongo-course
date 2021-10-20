@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const sendEmail = require('../utils/email');
+// const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 const signToken = (id) => {
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -49,6 +50,8 @@ exports.signup = catchAsync(async (req, res, next) => {
   //   const newUser = await User.create(req.body);//not secure because the role can be directly injected
   //Here need to be very carefull to specify the fields that we want to save in the database and to be shown in the output of the response
   //if we don't specify the role, we can just set it by using the default, if we are trying to inject the role manually it will not work
+  //the easy way is
+  //cont newUser = await User.create(req.body)
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -58,6 +61,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     // passwordChangedAt: req.body.passwordChangedAt,//not really needed for now
     // role: req.body.role//This is not safe to use like this, better change it directly in the database, or set a different route to change the roles of the users
   });
+
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  console.log(url);
+  await new Email(newUser, url).sendWelcome();
+
   createSendToken(newUser, 201, res);
 
   // const token = signToken(newUser._id);
@@ -261,10 +269,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   console.log(resetURL);
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Your password reset token is valid for 10 min',
-      message,
+    // await sendEmail({
+    //   email: user.email,
+    //   subject: 'Your password reset token is valid for 10 min',
+    //   message,
+    // });
+
+    await new Email(user, resetURL).sendPasswordReset();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to mail',
     });
   } catch (err) {
     user.passwordResetToken = undefined;
@@ -277,10 +292,10 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       500
     );
   }
-  res.status(200).json({
-    status: 'success',
-    message: 'Token sent to email!',
-  });
+  // res.status(200).json({
+  //   status: 'success',
+  //   message: 'Token sent to email!',
+  // });
 });
 //the user will send the token with the new password in order to reset the password
 exports.resetPassword = catchAsync(async (req, res, next) => {
