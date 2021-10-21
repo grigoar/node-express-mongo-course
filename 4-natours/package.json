@@ -9,7 +9,7 @@
     "debug": "SET NODE_ENV=production & ndb server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
-    "build:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
+    "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
   },
   "author": "",
   "license": "ISC",
@@ -35,6 +35,7 @@
     "pug": "^3.0.2",
     "sharp": "^0.29.1",
     "slugify": "^1.6.0",
+    "stripe": "^8.184.0",
     "validator": "^13.6.0",
     "xss-clean": "^0.1.1"
   },
