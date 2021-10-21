@@ -1,6 +1,7 @@
 const express = require('express');
 const viewController = require('../controllers/viewsController');
 const authController = require('../controllers/authController');
+const bookingController = require('../controllers/bookingController');
 
 const router = express.Router();
 
@@ -17,8 +18,13 @@ const router = express.Router();
 
 //to not do isLoggedIn and also protect for me we add for each route separately
 // router.use(authController.isLoggedIn);
-
-router.get('/', authController.isLoggedIn, viewController.getOverview);
+//this path will also be hit when there will be a successfull payment
+router.get(
+  '/',
+  bookingController.createBookingCheckout,
+  authController.isLoggedIn,
+  viewController.getOverview
+);
 router.get(
   '/tour/:tourSlug',
   authController.isLoggedIn,
@@ -28,6 +34,7 @@ router.get(
 
 router.get('/login', authController.isLoggedIn, viewController.getLoginForm);
 router.get('/me', authController.protect, viewController.getAccount);
+router.get('/my-tours', authController.protect, viewController.getMyTours);
 
 router.post(
   '/submit-user-data',
